@@ -1,0 +1,4 @@
+jQuery Mobile Events code from version 1.2 of jQuery Mobile.  
+I pulled out any jQuery Mobile dependencies to make the code work with regular jQuery.
+
+Right now only Swipe events work correctly.  Tap and Scroll events are a little buggy, possibly because they depended on 'vmouse' events built into jQuery Mobile.
