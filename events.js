@@ -72,6 +72,8 @@
     $.event.special.tap = {
         tapholdThreshold: 750,
 
+        tapXThreshold: 35,
+
         setup: function() {
             var thisObject = this,
                 $this = $( thisObject );
@@ -84,6 +86,7 @@
 
                 var origTarget = event.target,
                     origEvent = event.originalEvent,
+                    origX = (supportTouch) ? event.originalEvent.changedTouches[0].clientX : event.clientX,
                     timer;
 
                 function clearTapTimer() {
@@ -93,23 +96,26 @@
                 function clearTapHandlers() {
                     clearTapTimer();
 
-                    $this.unbind( touchStartEvent, clickHandler )
+                    $this.unbind( touchStopEvent, clickHandler )
                         .unbind( touchStopEvent, clearTapTimer );
                     $( document ).unbind( touchStopEvent, clearTapHandlers );
                 }
 
-                function clickHandler( event ) {
-                    clearTapHandlers();
+                function clickHandler( e ) {
+                    var endX = (supportTouch) ? e.originalEvent.changedTouches[0].clientX : e.clientX;
 
+                    clearTapHandlers();
+                    var xOK = (origX - endX > 0) ? (origX - endX) <= $.event.special.tap.tapXThreshold : (endX - origX) <= $.event.special.tap.tapXThreshold;
                     // ONLY trigger a 'tap' event if the start target is
-                    // the same as the stop target.
-                    if ( origTarget === event.target ) {
-                        triggerCustomEvent( thisObject, "tap", event );
+                    // the same as the stop target and if the X coords
+                    // haven't strayed too far.
+                    if ( origTarget === e.target && xOK ) {
+                        triggerCustomEvent( thisObject, "tap", e );
                     }
                 }
 
                 $this.bind( touchStopEvent, clearTapTimer )
-                    .bind( touchStartEvent, clickHandler );
+                    .bind( touchStopEvent, clickHandler );
                 $( document ).bind( touchStopEvent, clearTapHandlers );
 
                 timer = setTimeout( function() {
